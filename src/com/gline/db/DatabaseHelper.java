@@ -10,7 +10,6 @@ import com.gline.db.base.IColumnName;
 import com.gline.db.base.INullable;
 import com.gline.db.base.IPrimaryKey;
 import com.gline.db.base.ITableName;
-import com.gline.db.base.IUnique;
 import com.gline.db.test.Book;
 import com.gline.db.utils.ClassUtils;
 
@@ -128,8 +127,7 @@ public class DatabaseHelper {
 			if (cAuto != null) {
 				sBuffer.append(" AUTOINCREMENT");
 			}
-			IUnique cUnique = fields[index].getAnnotation(IUnique.class);
-			if (cUnique != null) {
+			if (cPrimaryKey.unique()) {
 				sBuffer.append(" UNIQUE");
 			}
 			INullable cNullable = fields[index].getAnnotation(INullable.class);
