@@ -5,8 +5,16 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target(ElementType.TYPE)
+@Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ITableName {
+public @interface IColumn {
+
 	String name();
+
+	ColumnType type();
+
+	int length() default -1;
+
+	boolean autoIncrement() default false;
+	
 }

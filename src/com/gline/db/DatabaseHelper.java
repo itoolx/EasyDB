@@ -5,10 +5,10 @@ import java.util.Date;
 import java.util.List;
 
 import com.gline.db.base.ColumnType;
-import com.gline.db.base.IColumnName;
+import com.gline.db.base.IColumn;
 import com.gline.db.base.INullable;
 import com.gline.db.base.IPrimaryKey;
-import com.gline.db.base.ITableName;
+import com.gline.db.base.ITable;
 import com.gline.db.test.Book;
 import com.gline.db.utils.ClassUtils;
 
@@ -47,7 +47,7 @@ public class DatabaseHelper {
 
 	private String select(Object object) {
 		Class<?> clazz = object.getClass();
-		ITableName cTableName = clazz.getAnnotation(ITableName.class);
+		ITable cTableName = clazz.getAnnotation(ITable.class);
 		if (cTableName == null) {
 			return null;
 		}
@@ -57,7 +57,7 @@ public class DatabaseHelper {
 		sBuffer.append(cTableName.name());
 		sBuffer.append(" WHERE");
 		Object value = null;
-		IColumnName cColumnName = null;
+		IColumn cColumnName = null;
 		for (int index = 0; index < fields.length; index++) {
 			fields[index].setAccessible(true);
 			try {
@@ -68,7 +68,7 @@ public class DatabaseHelper {
 				if (index > 0) {
 					sBuffer.append(" AND");
 				}
-				cColumnName = fields[index].getAnnotation(IColumnName.class);
+				cColumnName = fields[index].getAnnotation(IColumn.class);
 				sBuffer.append(" ");
 				sBuffer.append(cColumnName.name());
 				if (cColumnName.type() == ColumnType.INTEGER) {
@@ -95,7 +95,7 @@ public class DatabaseHelper {
 	}
 
 	private String createTable(Class<?> clazz) {
-		ITableName cTableName = clazz.getAnnotation(ITableName.class);
+		ITable cTableName = clazz.getAnnotation(ITable.class);
 		if (cTableName == null) {
 			return null;
 		}
@@ -105,7 +105,7 @@ public class DatabaseHelper {
 		Field[] fields = clazz.getDeclaredFields();
 		sBuffer.append("(");
 		for (int index = 0; index < fields.length; index++) {
-			IColumnName cColumnName = fields[index].getAnnotation(IColumnName.class);
+			IColumn cColumnName = fields[index].getAnnotation(IColumn.class);
 			sBuffer.append(cColumnName.name());
 			sBuffer.append(" ");
 			if (cColumnName.type() == ColumnType.AUTO_DATE) {
