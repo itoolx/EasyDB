@@ -5,7 +5,6 @@ import java.util.Date;
 import java.util.List;
 
 import com.gline.db.base.ColumnType;
-import com.gline.db.base.IAuto;
 import com.gline.db.base.IColumnName;
 import com.gline.db.base.INullable;
 import com.gline.db.base.IPrimaryKey;
@@ -109,8 +108,7 @@ public class DatabaseHelper {
 			IColumnName cColumnName = fields[index].getAnnotation(IColumnName.class);
 			sBuffer.append(cColumnName.name());
 			sBuffer.append(" ");
-			IAuto cAuto = fields[index].getAnnotation(IAuto.class);
-			if (cAuto != null && cColumnName.type() == ColumnType.DATE) {
+			if (cColumnName.type() == ColumnType.AUTO_DATE) {
 				sBuffer.append("TimeStamp DEFAULT(datetime('now', 'localtime'))");
 			} else {
 				sBuffer.append(cColumnName.type());
@@ -123,12 +121,12 @@ public class DatabaseHelper {
 			IPrimaryKey cPrimaryKey = fields[index].getAnnotation(IPrimaryKey.class);
 			if (cPrimaryKey != null) {
 				sBuffer.append(" PRIMARY KEY");
+				if (cPrimaryKey.unique()) {
+					sBuffer.append(" UNIQUE");
+				}
 			}
-			if (cAuto != null) {
+			if (cColumnName.autoIncrement()) {
 				sBuffer.append(" AUTOINCREMENT");
-			}
-			if (cPrimaryKey.unique()) {
-				sBuffer.append(" UNIQUE");
 			}
 			INullable cNullable = fields[index].getAnnotation(INullable.class);
 			if (cNullable != null && !cNullable.value()) {

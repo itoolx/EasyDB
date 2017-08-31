@@ -15,4 +15,6 @@ public @interface IColumnName {
 
 	int length() default -1;
 
+	boolean autoIncrement() default false;
+	
 }
