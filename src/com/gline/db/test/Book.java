@@ -13,7 +13,7 @@ public class Book {
 	@IPrimaryKey
 	@IAuto
 	@IColumnName(name = "ID", type = ColumnType.INTEGER)
-	private int mId;
+	private int mId = -1;
 
 	@INullable(false)
 	@IColumnName(name = "name", type = ColumnType.TEXT)
