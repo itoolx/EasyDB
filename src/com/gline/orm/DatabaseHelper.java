@@ -1,7 +1,6 @@
 package com.gline.orm;
 
 import java.lang.reflect.Field;
-import java.util.Date;
 import java.util.List;
 
 import com.gline.orm.base.ColumnType;
@@ -26,9 +25,7 @@ public class DatabaseHelper {
 
 	public static void main(String[] args) throws Exception {
 		DatabaseHelper.getInstance().init("com.gline.db.test");
-		Book cBook = new Book();
-		cBook.name = "ddd";
-		DatabaseHelper.getInstance().select(cBook, new IColumn[]{});
+		DatabaseHelper.getInstance().selectBy(Book.class, "name LIKE '%dd%'");
 	}
 
 	public void init(String packageName) {
@@ -41,65 +38,52 @@ public class DatabaseHelper {
 		System.out.println(sql);
 	}
 
-	private void select(Book cBook, IColumn[] iColumns) {
-		select(cBook, "*");
-	}
-
-	private List<Object> select(Object object, String fieldFilter) {
+	// insert into Book (id,name,date) values(1,'A1','yyyymmdd-HHMMSS')
+	public boolean insert(Object object) {
 		Class<?> clazz = object.getClass();
-		Field[] fields = clazz.getDeclaredFields();
-		StringBuffer sBuffer = new StringBuffer();
-		Object value = null;
-		IColumn cColumnName = null;
-		for (int index = 0; index < fields.length; index++) {
-			fields[index].setAccessible(true);
-			try {
-				value = fields[index].get(object);
-				if (value == null) {
-					continue;
-				}
-				if (index > 0) {
-					sBuffer.append(" AND");
-				}
-				cColumnName = fields[index].getAnnotation(IColumn.class);
-				sBuffer.append(" ");
-				sBuffer.append(cColumnName.name());
-				if (cColumnName.type() == ColumnType.INTEGER) {
-					sBuffer.append(" == ");
-					sBuffer.append(((Integer) value).intValue());
-				} else if (cColumnName.type() == ColumnType.TEXT) {
-					sBuffer.append(" like '");
-					sBuffer.append((String) value);
-					sBuffer.append("'");
-				} else if (cColumnName.type() == ColumnType.DATE) {
-					sBuffer.append(" == ");
-					sBuffer.append(((Date) value).getTime());
-				} else {
-					sBuffer.append(" == '");
-					sBuffer.append((String) value);
-					sBuffer.append("'");
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+		ITable cTableName = clazz.getAnnotation(ITable.class);
+		if (cTableName == null) {
+			return false;
 		}
-		return selectBy(clazz, fieldFilter,  sBuffer.toString());
+		StringBuffer sBuffer = new StringBuffer();
+		// TODO
+		return true;
 	}
-
-	public List<Object> selectBy(Class<?> clazz, String fieldFilter,  String where) {
+	
+	public List<Object> selectBy(Class<?> clazz,  String where) {
 		ITable cTableName = clazz.getAnnotation(ITable.class);
 		if (cTableName == null) {
 			return null;
 		}
 		StringBuffer sBuffer = new StringBuffer();
-		sBuffer.append("SELECT ");
-		sBuffer.append(fieldFilter);
-		sBuffer.append(" FROM ");
+		sBuffer.append("SELECT * FROM ");
 		sBuffer.append(cTableName.name());
-		sBuffer.append(" WHERE");
+		sBuffer.append(" WHERE ");
 		sBuffer.append(where);
 		sBuffer.append(";");
 		return selectRaw(sBuffer.toString());
+	}
+
+	public boolean update(Object object) {
+		Class<?> clazz = object.getClass();
+		ITable cTableName = clazz.getAnnotation(ITable.class);
+		if (cTableName == null) {
+			return false;
+		}
+		StringBuffer sBuffer = new StringBuffer();
+		// TODO
+		return true;
+	}
+
+	public boolean delete(Object object) {
+		Class<?> clazz = object.getClass();
+		ITable cTableName = clazz.getAnnotation(ITable.class);
+		if (cTableName == null) {
+			return false;
+		}
+		StringBuffer sBuffer = new StringBuffer();
+		// TODO
+		return true;
 	}
 	
 	public List<Object> selectRaw(String sql) {
