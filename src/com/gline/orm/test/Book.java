@@ -1,11 +1,13 @@
-package com.gline.db.test;
+package com.gline.orm.test;
 
-import com.gline.db.base.ColumnType;
-import com.gline.db.base.IColumn;
-import com.gline.db.base.INullable;
-import com.gline.db.base.IPrimaryKey;
-import com.gline.db.base.ITable;
+import com.gline.orm.base.ColumnType;
+import com.gline.orm.base.IColumn;
+import com.gline.orm.base.INullable;
+import com.gline.orm.base.IPrimaryKey;
+import com.gline.orm.base.ISchema;
+import com.gline.orm.base.ITable;
 
+@ISchema(name = "ibook", version = 1)
 @ITable(name = "Book")
 public class Book {
 

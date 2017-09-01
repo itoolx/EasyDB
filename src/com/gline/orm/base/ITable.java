@@ -1,4 +1,4 @@
-package com.gline.db.base;
+package com.gline.orm.base;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
