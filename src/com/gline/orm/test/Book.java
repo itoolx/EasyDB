@@ -23,4 +23,8 @@ public class Book {
 	@IColumn(name = "date", type = ColumnType.AUTO_DATE)
 	public String date;
 
+	@INullable(true)
+	@IColumn(name = "data", type = ColumnType.BLOB)
+	public byte[] data;
+
 }
