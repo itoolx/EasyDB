@@ -2,9 +2,12 @@ package com.gline.orm;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.database.Cursor;
+import android.database.DatabaseErrorHandler;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.os.Environment;
 import android.text.TextUtils;
 
 import com.gline.orm.base.ColumnType;
@@ -16,6 +19,8 @@ import com.gline.orm.base.ITable;
 import com.gline.orm.model.TableInfoBuilder;
 import com.gline.orm.utils.ClassUtils;
 
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -93,7 +98,82 @@ public final class EasyDB {
         return INSTANCE;
     }
 
+    public static final class DatabaseContext extends ContextWrapper {
+
+        private boolean mIsSaveInSdcard;
+
+        public DatabaseContext(Context context, boolean isSaveInSdcard) {
+            super(context);
+            mIsSaveInSdcard = isSaveInSdcard;
+        }
+
+        /**
+         * 获得数据库路径，如果不存在，则创建对象对象
+         *
+         * @param name
+         */
+        @Override
+        public File getDatabasePath(String name) {
+            boolean sdExist = android.os.Environment.MEDIA_MOUNTED.equals(
+                    android.os.Environment.getExternalStorageState());
+            if (!sdExist || mIsSaveInSdcard) {
+                return super.getDatabasePath(name);
+            } else {
+                File dbDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath(), "db");
+                if (!dbDir.exists()) {
+                    dbDir.mkdirs();
+                }
+                try {
+                    File dbFile = new File(dbDir, name);
+                    if (!dbFile.exists()) {
+                        dbFile.createNewFile();
+                    }
+                    return dbFile;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                return null;
+            }
+        }
+
+        /**
+         * 重载这个方法，是用来打开SD卡上的数据库的，android 2.3及以下会调用这个方法。
+         *
+         * @param name
+         * @param mode
+         * @param factory
+         */
+        @Override
+        public SQLiteDatabase openOrCreateDatabase(String name, int mode, SQLiteDatabase.CursorFactory factory) {
+            return SQLiteDatabase.openOrCreateDatabase(getDatabasePath(name), null);
+        }
+
+        /**
+         * Android 4.0会调用此方法获取数据库。
+         *
+         * @param name
+         * @param mode
+         * @param factory
+         * @param errorHandler
+         * @see android.content.ContextWrapper#openOrCreateDatabase(java.lang.String, int,
+         * android.database.sqlite.SQLiteDatabase.CursorFactory,
+         * android.database.DatabaseErrorHandler)
+         */
+        @Override
+        public SQLiteDatabase openOrCreateDatabase(String name, int mode, SQLiteDatabase.CursorFactory factory, DatabaseErrorHandler errorHandler) {
+            return SQLiteDatabase.openOrCreateDatabase(getDatabasePath(name), null);
+        }
+
+        public static final Context wrapper(Context context, boolean isSaveInSdcard) {
+            return new DatabaseContext(context, isSaveInSdcard);
+        }
+    }
+
     public void init(Context context) {
+        init(context, true);
+    }
+
+    public void init(Context context, boolean isSaveInSdcard) {
         List<Class<?>> mTableClasses = ClassUtils.getAllClasses(context, ClassUtils.TABLE_FILTER);
         TriplePair<ISchema, String, String> tableInfoPair;
         ISchema iSchema;
@@ -121,7 +201,8 @@ public final class EasyDB {
             cTableInfoBuilder.append(tableInfoPair.getV1(), tableInfoPair.getV2());
         }
         for (TableInfoBuilder tableInfoBuilder : mDatabaseMap.values()) {
-            mDatabaseHelperMap.put(tableInfoBuilder.getId(), new SQLHelper(context, tableInfoBuilder));
+            mDatabaseHelperMap.put(tableInfoBuilder.getId(), new SQLHelper(
+                    DatabaseContext.wrapper(context, isSaveInSdcard), tableInfoBuilder));
         }
     }
 
